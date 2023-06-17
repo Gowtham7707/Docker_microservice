@@ -1,0 +1,10 @@
+pipeline{
+
+    agent any 
+
+    stages{
+        stage{
+            git 'https://github.com/Gowtham7707/Docker-microservice-app.git'
+        }
+    }
+}
