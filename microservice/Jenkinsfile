@@ -3,7 +3,6 @@ pipeline {
         label 'demo'
     }
     tools {
-        jdk 'jdk11'
         maven 'maven3'
     }
     environment {
