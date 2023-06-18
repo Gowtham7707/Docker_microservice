@@ -1,13 +1,70 @@
-pipeline{
-
-    agent any 
-
-    stages('Git checkout'){
-        stage{
-            script{
-                   git branch: 'main', url: 'https://github.com/Gowtham7707/Docker_microservice.git'
-            }
-          
-        }
+pipeline {
+    agent {
+        label 'demo'
     }
+    tools {
+        jdk 'jdk11'
+        maven 'maven3'
+    }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+
+    stages {
+        stage('git-checkout') {
+            steps {
+                 git 'https://github.com/webdevprashant/jenkins-training-CI-CD-Day6.git'
+            }
+        }
+
+        stage('Code-Compile') {
+            steps {
+               sh "mvn clean compile"
+            }
+        }
+        
+        stage('testing') {
+            steps {
+               sh "mvn test"
+            }
+        }
+
+        stage('Sonar Analysis') {
+            steps {
+               withSonarQubeEnv('sonar-scanner') {
+                   sh """$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=petclinic \
+                   -Dsonar.java.binaries=. \
+                   -Dsonar.projectKey=CI-CD"""
+               }
+            }
+        }
+        
+        stage('OWASP Dependency Check') {
+            steps {
+               dependencyCheck additionalArguments: '--scan. /', odcInstallation: 'DP-check'
+               dependencyCheckPublisher pattern: '**/dependency-check-report.html'
+            }
+        }
+        
+        stage('Code-Build') {
+            steps {
+               sh "mvn clean install"
+            }
+        }
+        
+        stage('Docker Build') {
+            steps {
+               script {
+                   withDockerRegistry(credentialsId: '2ab334e9-8f9e-491c-96cb-a58a5814feca', toolName: 'docker' , url: 'https://index.docker.io/v1/') {
+                       sh "docker build -t javaimage ."
+                       sh "docker tag javaapp muni5/javaapp:latest"
+                       sh "docker push muni5/javaapp:latest"
+                       sh "docker run -d -p 8000:8000 --name javaapp1 muni5/javaapp:latest"
+                   }
+               }
+            }
+        }    
+        
+        
+}
 }
