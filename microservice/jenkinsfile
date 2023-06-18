@@ -1,19 +1,13 @@
 pipeline{
-    
+
     agent any 
-    
-    stages {
-        
-        stage('Git Checkout'){
-            
-            steps{
-                
-                script{
-                    
-                     git branch: 'main', url: 'https://github.com/Gowtham7707/Docker_microservice.git'
-                }
+
+    stages('Git checkout'){
+        stage{
+            script{
+                   git branch: 'main', url: 'https://github.com/Gowtham7707/Docker_microservice.git'
             }
+          
         }
-        
-        
+    }
 }
